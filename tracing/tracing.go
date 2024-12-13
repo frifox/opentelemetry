@@ -105,6 +105,9 @@ func (p otelPlugin) Initialize(db *gorm.DB) (err error) {
 
 func (p *otelPlugin) before(spanName string) gormHookFunc {
 	return func(tx *gorm.DB) {
+		if name, ok := tx.Statement.Context.Value("name").(string); ok && name != "" {
+			spanName = name
+		}
 		tx.Statement.Context, _ = p.tracer.Start(tx.Statement.Context, spanName, trace.WithSpanKind(trace.SpanKindClient))
 	}
 }
